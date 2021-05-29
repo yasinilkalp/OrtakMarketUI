@@ -1,71 +1,51 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
-  Popconfirm,
   Form,
   Tooltip,
   Button,
+  Popconfirm,
   message,
   Row,
   Col,
 } from "antd";
-
 import {
   SaveOutlined,
   EditOutlined,
   DeleteOutlined,
   CloseOutlined,
+  PlusCircleOutlined,
 } from "@ant-design/icons";
-import originData from "assets/data/bankalar.json";
 import EditableCell from "components/table-components/EditableCell";
+import AddNewDocumentForm from "../documents/documentForm";
+var originData = [
+  {
+    id: 1,
+    name: "Sözleşme 001",
+    isPharmacy: true,
+  },
+  {
+    id: 2,
+    name: "Sözleşme 002",
+    isPharmacy: true,
+  },
+  {
+    id: 3,
+    name: "Sözleşme 003",
+    isPharmacy: false,
+  },
+];
 
-const DocumentBox = (dataSource) => {
-  const [form] = Form.useForm();
-  const [data, setData] = useState([]);
-  const [editingKey, setEditingKey] = useState("");
-
-  const isEditing = (record) => record.eft === editingKey;
-
-  const edit = (record) => {
-    if (editingKey) return;
-
-    form.setFieldsValue({ ...record });
-    setEditingKey(record.eft);
-  };
-
-  const cancel = () => {
-    setEditingKey("");
-  };
-
-  const remove = (key) => {
-    const list = [...data];
-    setData(list.filter((item) => item.eft !== key));
-    setEditingKey("");
-    message.success("Kayıt başarıyla silinmiştir.");
-  };
-
-  const save = async (key) => {
-    try {
-      const row = await form.validateFields();
-      const newData = [...data];
-      const index = newData.findIndex((item) => key === item.eft);
-
-      if (index > -1) {
-        const item = newData[index];
-        newData.splice(index, 1, { ...item, ...row });
-        setData(newData);
-        setEditingKey("");
-      } else {
-        newData.push(row);
-        setData(newData);
-        setEditingKey("");
-      }
-
-      message.success("Kayıt başarıyla güncellenmiştir.");
-    } catch (errInfo) {
-      console.log("Validate Failed:", errInfo);
-    }
-  };
+const DocumentBox = ({
+  dataSource,
+  save,
+  edit,
+  cancel,
+  remove,
+  editingKey,
+  form,
+}) => {
+  const isEditing = (record) => record.id === editingKey;
 
   const columns = [
     {
@@ -85,7 +65,7 @@ const DocumentBox = (dataSource) => {
               <Button
                 type="primary"
                 className="mr-2"
-                onClick={() => save(record.eft)}
+                onClick={() => save(record.id)}
                 size="small"
                 icon={<SaveOutlined />}
               />
@@ -95,7 +75,7 @@ const DocumentBox = (dataSource) => {
               <Button
                 type="danger"
                 className="mr-2"
-                onClick={() => cancel(record.eft)}
+                onClick={() => cancel(record.id)}
                 size="small"
                 icon={<CloseOutlined />}
               />
@@ -120,7 +100,7 @@ const DocumentBox = (dataSource) => {
               cancelText="Hayır"
               title="Emin misin?"
               disabled={editingKey !== ""}
-              onConfirm={() => remove(record.eft)}
+              onConfirm={() => remove(record.id)}
             >
               <Tooltip title="Sil">
                 <Button
@@ -160,24 +140,17 @@ const DocumentBox = (dataSource) => {
     };
   });
 
-  React.useEffect(() => {
-    setData(originData);
-  });
-
   return (
     <Form form={form} component={false}>
       <Table
         components={components}
         bordered
-        dataSource={data}
+        dataSource={dataSource}
         columns={mergedColumns}
         rowClassName="editable-row"
-        rowKey="eft"
+        rowKey="id"
         pagination={{
           onChange: cancel,
-        }}
-        onChange={(pagination, filters, sorter, extra) => {
-          console.log("ok");
         }}
       />
     </Form>
@@ -185,17 +158,142 @@ const DocumentBox = (dataSource) => {
 };
 
 const Documents = () => {
+  const [form] = Form.useForm();
+  const [data, setData] = useState([]);
+  const [editingKey, setEditingKey] = useState("");
+  const [IsOpenModal, setIsOpenModal] = useState(false);
+  const [IsPharmacy, setIsPharmacy] = useState(false);
+
+  useEffect(() => {
+    setData(originData);
+  }, []);
+
+  const getdata = (isPharmacy) => {
+    return data.filter((x) => x.isPharmacy == isPharmacy);
+  };
+
+  const edit = (record) => {
+    if (editingKey) return;
+
+    form.setFieldsValue({ ...record });
+    setEditingKey(record.id);
+  };
+
+  const remove = (key) => {
+    const list = [...data];
+    setData(list.filter((item) => item.id !== key));
+    setEditingKey("");
+    message.success("Kayıt başarıyla silinmiştir.");
+  };
+
+  const cancel = () => {
+    setEditingKey("");
+  };
+
+  const save = async (key) => {
+    try {
+      const row = await form.validateFields();
+      const newData = [...data];
+      const index = newData.findIndex((item) => key === item.id);
+
+      if (index > -1) {
+        const item = newData[index];
+        newData.splice(index, 1, { ...item, ...row });
+        setData(newData);
+        setEditingKey("");
+      } else {
+        newData.push(row);
+        setData(newData);
+        setEditingKey("");
+      }
+
+      message.success("Kayıt başarıyla güncellenmiştir.");
+    } catch (errInfo) {
+      console.log("Validate Failed:", errInfo);
+    }
+  };
+
+  const modalState = async (value, isPharmacy) => {
+    setIsOpenModal(value);
+    setIsPharmacy(isPharmacy);
+  };
+
+  const createDocument = (values) => {
+    var newData = {
+      name: values.name,
+      id: data.length + 1,
+      isPharmacy: values.isPharmacy,
+    };
+
+    console.log(newData);
+
+    setData((data) => [...data, newData]);
+    setEditingKey("");
+    setIsOpenModal(false);
+    message.success("Kayıt başarıyla oluşturulmuştur.");
+  };
+
   return (
-    <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-      <Col className="gutter-row" span={12}>
-        <h2 className="mb-4"> Dökümanlar </h2>
-        <DocumentBox dataSource={originData} />
-      </Col>
-      <Col className="gutter-row" span={12}>
-        <h2 className="mb-4"> Dökümanlar </h2>
-        <DocumentBox dataSource={originData} />
-      </Col>
-    </Row>
+    <>
+      <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+        <Col className="gutter-row" span={12}>
+          <Row>
+            <Col span={20}>
+              <h2 className="mb-4"> Genel Dökümanlar </h2>
+            </Col>
+            <Col span={4}>
+              <Button
+                type="link"
+                size="middle"
+                onClick={() => modalState(true, true)}
+              >
+                <PlusCircleOutlined />
+              </Button>
+            </Col>
+          </Row>
+          <DocumentBox
+            dataSource={getdata(true)}
+            remove={remove}
+            edit={edit}
+            save={save}
+            cancel={cancel}
+            editingKey={editingKey}
+            form={form}
+          />
+        </Col>
+        <Col className="gutter-row" span={12}>
+          <Row>
+            <Col span={20}>
+              <h2 className="mb-4"> Eczane Özel Dökümanlar </h2>
+            </Col>
+            <Col span={4}>
+              <Button
+                type="link"
+                size="middle"
+                onClick={() => modalState(true, false)}
+              >
+                <PlusCircleOutlined />
+              </Button>
+            </Col>
+          </Row>
+          <DocumentBox
+            dataSource={getdata(false)}
+            remove={remove}
+            edit={edit}
+            save={save}
+            cancel={cancel}
+            editingKey={editingKey}
+            form={form}
+          />
+        </Col>
+      </Row>
+      <AddNewDocumentForm
+        visible={IsOpenModal}
+        isPharmacy={IsPharmacy}
+        onCreate={createDocument}
+        onCancel={() => modalState(false)}
+      />
+    </>
   );
 };
 

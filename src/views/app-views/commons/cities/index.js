@@ -1,7 +1,8 @@
 import React from "react";
+import CityTables from "./CityTables";
 
 const Cities = () => {
-  return <div>Cities component works!</div>;
+  return <CityTables />;
 };
 
 export default Cities;

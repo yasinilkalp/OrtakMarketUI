@@ -10,7 +10,6 @@ import {
   Row,
   Col,
 } from "antd";
-import originData from "assets/data/bankalar.json";
 import {
   SaveOutlined,
   EditOutlined,
@@ -18,23 +17,24 @@ import {
   CloseOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
-import AddNewBankForm from "./bankForm";
+import originData from "assets/data/cities.json";
+import AddNewCityForm from "./cityForm";
 import EditableCell from "components/table-components/EditableCell";
 
-const CitiesTable = () => {
+const CityTables = () => {
   const [form] = Form.useForm();
   const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
   const [IsOpenModal, setIsOpenModal] = useState(false);
   const [editingKey, setEditingKey] = useState("");
 
-  const isEditing = (record) => record.eft === editingKey;
+  const isEditing = (record) => record.id === editingKey;
 
   const edit = (record) => {
     if (editingKey) return;
 
     form.setFieldsValue({ ...record });
-    setEditingKey(record.eft);
+    setEditingKey(record.id);
   };
 
   const cancel = () => {
@@ -43,7 +43,7 @@ const CitiesTable = () => {
 
   const remove = (key) => {
     const list = [...data];
-    setData(list.filter((item) => item.eft !== key));
+    setData(list.filter((item) => item.id !== key));
     setEditingKey("");
     message.success("Kayıt başarıyla silinmiştir.");
   };
@@ -52,7 +52,7 @@ const CitiesTable = () => {
     try {
       const row = await form.validateFields();
       const newData = [...data];
-      const index = newData.findIndex((item) => key === item.eft);
+      const index = newData.findIndex((item) => key === item.id);
 
       if (index > -1) {
         const item = newData[index];
@@ -79,10 +79,10 @@ const CitiesTable = () => {
     setSearch(e.target.value);
   };
 
-  const createBank = (values) => {
+  const createCity = (values) => {
     var newData = {
       name: values.name,
-      eft: data.length + 1,
+      id: data.length + 1,
     };
 
     console.log(newData);
@@ -94,9 +94,27 @@ const CitiesTable = () => {
 
   const columns = [
     {
-      title: "Banka Adı",
+      title: "Şehir Adı",
       dataIndex: "name",
+      width: "100%",
       editable: true,
+    },
+    {
+      title: "İlçeler",
+      with: "100px",
+      dataIndex: "District",
+      render: (text, record) => {
+        return (
+          <div className="d-flex">
+            <Button type="ghost" size="small" className="mr-2">
+              5 İlçeler
+            </Button>
+            <Button type="ghost" size="small">
+              4 Vergi Dairesi
+            </Button>
+          </div>
+        );
+      },
     },
     {
       title: "İşlemler",
@@ -110,7 +128,7 @@ const CitiesTable = () => {
               <Button
                 type="primary"
                 className="mr-2"
-                onClick={() => save(record.eft)}
+                onClick={() => save(record.id)}
                 size="small"
                 icon={<SaveOutlined />}
               />
@@ -120,7 +138,7 @@ const CitiesTable = () => {
               <Button
                 type="danger"
                 className="mr-2"
-                onClick={() => cancel(record.eft)}
+                onClick={() => cancel(record.id)}
                 size="small"
                 icon={<CloseOutlined />}
               />
@@ -145,7 +163,7 @@ const CitiesTable = () => {
               cancelText="Hayır"
               title="Emin misin?"
               disabled={editingKey !== ""}
-              onConfirm={() => remove(record.eft)}
+              onConfirm={() => remove(record.id)}
             >
               <Tooltip title="Sil">
                 <Button
@@ -187,7 +205,7 @@ const CitiesTable = () => {
 
   React.useEffect(() => {
     const results = originData
-      .filter((person) => person.name.toLowerCase().includes(search))
+      .filter((item) => item.name.toLowerCase().includes(search))
       .sort((a, b) => {
         return a.name - b.name;
       });
@@ -200,47 +218,38 @@ const CitiesTable = () => {
   }, [search]);
 
   return (
-    <Form form={form} component={false}>
-      <Row>
-        <Col className="gutter-row" span={13}>
-          <h2 className="mb-4"> Bankalar </h2>
-        </Col>
-        <Col className="gutter-row mr-4" span={6}>
-          <Input onChange={filter} value={search} placeholder="Arama..." />
-        </Col>
-        <Col className="gutter-row " span={4}>
-          <Button onClick={() => modalState(true)} type="primary" block>
-            <PlusOutlined /> Yeni Ekle
-          </Button>
-        </Col>
-      </Row>
+    <>
+      <Form form={form} component={false}>
+        <Row>
+          <Col className="gutter-row" span={13}>
+            <h2 className="mb-4"> Şehirler </h2>
+          </Col>
+          <Col className="gutter-row mr-4" span={6}>
+            <Input onChange={filter} value={search} placeholder="Arama..." />
+          </Col>
+          <Col className="gutter-row " span={4}>
+            <Button onClick={() => modalState(true)} type="primary" block>
+              <PlusOutlined /> Yeni Ekle
+            </Button>
+          </Col>
+        </Row>
+        <Table
+          components={components}
+          bordered
+          dataSource={data}
+          columns={mergedColumns}
+          rowClassName="editable-row"
+          rowKey="id"
+        />
 
-      <Table
-        components={components}
-        bordered
-        dataSource={data}
-        columns={mergedColumns}
-        rowClassName="editable-row"
-        rowKey="eft"
-        pagination={{
-          onChange: cancel,
-        }}
-        onChange={(pagination, filters, sorter, extra) => {
-          console.log("ok");
-        }}
-      />
-
-      <AddNewBankForm
-        visible={IsOpenModal}
-        onCreate={createBank}
-        onCancel={() => modalState(false)}
-      />
-    </Form>
+        <AddNewCityForm
+          visible={IsOpenModal}
+          onCreate={createCity}
+          onCancel={() => modalState(false)}
+        />
+      </Form>
+    </>
   );
 };
 
-const Banks = () => {
-  return <CitiesTable />;
-};
-
-export default Banks;
+export default CityTables;
