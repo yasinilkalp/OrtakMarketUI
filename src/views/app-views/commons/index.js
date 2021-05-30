@@ -49,6 +49,7 @@ export class Commons extends Component {
     return (
       <InnerAppLayout
         sideContentWidth={320}
+        className="kod-box"
         sideContent={<SettingOption {...this.props} />}
         mainContent={<SettingContent {...this.props} />}
       />

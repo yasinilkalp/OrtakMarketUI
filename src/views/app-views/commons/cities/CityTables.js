@@ -21,7 +21,7 @@ import originData from "assets/data/cities.json";
 import AddNewCityForm from "./cityForm";
 import EditableCell from "components/table-components/EditableCell";
 
-const CityTables = () => {
+const CityTables = ({ districtModal }) => {
   const [form] = Form.useForm();
   const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
@@ -106,11 +106,16 @@ const CityTables = () => {
       render: (text, record) => {
         return (
           <div className="d-flex">
-            <Button type="ghost" size="small" className="mr-2">
-              5 İlçeler
+            <Button
+              type="ghost"
+              size="small"
+              className="mr-2"
+              onClick={() => districtModal(record.id)}
+            >
+              İlçeler
             </Button>
             <Button type="ghost" size="small">
-              4 Vergi Dairesi
+              Vergi Daireleri
             </Button>
           </div>
         );
