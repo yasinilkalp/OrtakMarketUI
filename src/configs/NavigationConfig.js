@@ -24,7 +24,7 @@ const dashBoardNavTree = [
     submenu: [
       {
         key: "category",
-        path: `${APP_PREFIX_PATH}/category`,
+        path: `${APP_PREFIX_PATH}/products/category`,
         title: "Kategori Yönetimi",
         icon: PartitionOutlined,
         breadcrumb: false,
