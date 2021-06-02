@@ -83,8 +83,9 @@ const CategoryBox = (props) => {
     <>
       <Card type="inner" title={props.title} className="block mr-4">
         <Search
-          placeholder="input search text"
-          onSearch={onSearch} 
+          placeholder="Kategori adını yazınız"
+          onSearch={onSearch}
+          size="small"
         />
         {props.dataSource.map((item) => {
           return (
@@ -103,6 +104,10 @@ const CategoryBox = (props) => {
   );
 };
 
+const CategoryBreadCrumb = (props) => {
+  return props.isLastCategory ? <>{props.dataSource.map(item=> item.title).join(" > ")}</> : <></>;
+};
+
 const categoryReducer = (state, action) => {
   switch (action.type) {
     case "add":
@@ -118,6 +123,7 @@ const categoryReducer = (state, action) => {
 const Categories = () => {
   const [data, setData] = useState([]);
   const [subCategory, setSubCategory] = useReducer(categoryReducer, []);
+  const [isLastCategory, setIsLastCategory] = useState(false);
 
   useEffect(() => {
     setData(originData);
@@ -132,9 +138,7 @@ const Categories = () => {
       setSubCategory({ item, type: "add" });
     }
 
-    if (item.children.length === 0) {
-      // Son kategoridir.
-    }
+    setIsLastCategory(item.children.length === 0);
   };
 
   return (
@@ -165,6 +169,11 @@ const Categories = () => {
         ) : (
           <></>
         )}
+
+        <CategoryBreadCrumb
+          dataSource={subCategory}
+          isLastCategory={isLastCategory}
+        />
       </div>
     </>
   );
