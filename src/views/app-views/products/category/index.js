@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { Card } from "antd";
-
+import React, { useEffect, useReducer, useState } from "react";
+import { Card, Input } from "antd";
+import { DoubleRightOutlined } from "@ant-design/icons";
 var originData = [
   {
     key: 1,
@@ -70,24 +70,31 @@ var originData = [
     key: 99,
     level: 1,
     title: "DENEME",
+    children: [],
   },
 ];
 
-const CategoryBox = ({ dataSource, selected, onSelect }) => {
+const { Search } = Input;
+
+const CategoryBox = (props) => {
+  const onSearch = () => {};
+
   return (
     <>
-      <Card
-        title={selected?.title ?? "Kategori Seçiniz"}
-        className="block mr-4"
-      >
-        {dataSource.map((item) => {
+      <Card type="inner" title={props.title} className="block mr-4">
+        <Search
+          placeholder="input search text"
+          onSearch={onSearch} 
+        />
+        {props.dataSource.map((item) => {
           return (
             <button
               style={{ display: "block" }}
               key={item.key}
-              onClick={() => onSelect(item)}
+              onClick={() => props.onSelect(item)}
             >
-              {item.title}
+              {item.title}{" "}
+              {item.children.length > 0 ? <DoubleRightOutlined /> : <></>}
             </button>
           );
         })}
@@ -96,29 +103,37 @@ const CategoryBox = ({ dataSource, selected, onSelect }) => {
   );
 };
 
+const categoryReducer = (state, action) => {
+  switch (action.type) {
+    case "add":
+      return [...state, action.item];
+    case "remove":
+      const update = [...state];
+      return update.filter((a) => a.level < action.item.level);
+    default:
+      return state;
+  }
+};
+
 const Categories = () => {
   const [data, setData] = useState([]);
-  const [selected, setSelected] = useState([]);
+  const [subCategory, setSubCategory] = useReducer(categoryReducer, []);
 
   useEffect(() => {
     setData(originData);
   }, []);
 
   const onSelect = (item) => {
-    if ((item.children ?? []).length > 0) {
-      
-      var maxLevel = Math.max.apply(
-        Math,
-        selected.map(function (o) {
-          return o.level;
-        })
-      );
+    if (subCategory.some((a) => a.level == item.level)) {
+      setSubCategory({ item, type: "remove" });
+    }
 
-      setSelected(selected.filter((a) => a.level < maxLevel));
+    if (!subCategory.some((a) => a.key == item.key)) {
+      setSubCategory({ item, type: "add" });
+    }
 
-      if (!selected.some((a) => a.key == item.key)) {
-        setSelected([...selected, item]);
-      }
+    if (item.children.length === 0) {
+      // Son kategoridir.
     }
   };
 
@@ -128,25 +143,27 @@ const Categories = () => {
         <CategoryBox
           key="0"
           dataSource={data}
-          onSelect={(item) => onSelect(item)}
-          selected={selected}
+          onSelect={onSelect}
+          title="Kategori Seçiniz"
         />
 
-        {selected.length === 0 ? (
-          <></>
-        ) : (
+        {subCategory.length > 0 ? (
           <>
-            {selected.map((s) => {
-              return (
-                <CategoryBox
-                  key={s.key}
-                  dataSource={s.children}
-                  onSelect={(item) => onSelect(item)}
-                  selected={selected}
-                />
-              );
-            })}
+            {subCategory
+              .filter((s) => s.children.length > 0)
+              .map((s) => {
+                return (
+                  <CategoryBox
+                    key={s.key}
+                    dataSource={s.children}
+                    onSelect={onSelect}
+                    title={s.title}
+                  />
+                );
+              })}
           </>
+        ) : (
+          <></>
         )}
       </div>
     </>
