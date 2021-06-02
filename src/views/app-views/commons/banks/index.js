@@ -9,8 +9,7 @@ import {
   message,
   Row,
   Col,
-} from "antd";
-import originData from "assets/data/bankalar.json";
+} from "antd"; 
 import {
   SaveOutlined,
   EditOutlined,
@@ -20,6 +19,7 @@ import {
 } from "@ant-design/icons";
 import AddNewBankForm from "./bankForm";
 import EditableCell from "components/table-components/EditableCell";
+import api from "services/ApiService";
 
 const CitiesTable = () => {
   const [form] = Form.useForm();
@@ -186,13 +186,21 @@ const CitiesTable = () => {
   });
 
   React.useEffect(() => {
-    const results = originData
-      .filter((person) => person.name.toLowerCase().includes(search))
-      .sort((a, b) => {
-        return a.name - b.name;
-      });
+    api
+      .getPost("/Bank")
+      .then((res) => {
+        console.log(res);
+        const results = res
+          .filter((person) => person.name.toLowerCase().includes(search))
+          .sort((a, b) => {
+            return a.name - b.name;
+          }); 
+        setData(results);
 
-    setData(results);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
 
     if (search === "") {
       setEditingKey("");
