@@ -1,21 +1,16 @@
 import React from "react";
 import { Popconfirm, Tooltip } from "antd";
-import {
-  SaveOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  CloseOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
 const CategoryEditPanel = (props) => {
+  var editModel = props.dataSource[props.dataSource.length - 1];
   return (
     <>
       {props.dataSource.length > 0 ? (
         <>
           <div className="category-edit-menu">
             <Tooltip title="Düzenle">
-              <button onClick={() => props.drawerState(true)}>
+              <button onClick={() => props.drawerState(true, 'edit', editModel)}>
                 <EditOutlined />
               </button>
             </Tooltip>

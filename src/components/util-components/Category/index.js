@@ -30,7 +30,7 @@ const CategoryBox = (props) => {
         extra={
           <button
             className="category-card-button"
-            onClick={() => props.drawerState(true, props.item)}
+            onClick={() => props.drawerState(true, "new", props.item)}
           >
             <PlusCircleOutlined /> <span> Yeni </span>
           </button>
@@ -56,7 +56,7 @@ const CategoryBox = (props) => {
                 key={item.key}
                 onClick={() => props.onSelect(item)}
               >
-                {item.title}{" "}
+                {item.title} ({item.commissionRate}% - {item.termDay} gün)
                 {item.children.length > 0 ? <DoubleRightOutlined /> : <></>}
               </button>
             );
@@ -68,14 +68,14 @@ const CategoryBox = (props) => {
 };
 
 const subCategoryReducer = (state, action) => {
+  const _data = [...state];
+
   switch (action.type) {
     case "add":
       return [...state, action.item];
     case "remove":
-      const update = [...state];
-      return update.filter((a) => a.level < action.item.level);
+      return _data.filter((a) => a.level < action.item.level);
     case "itemRemove":
-      const _data = [...state];
       if (_data.filter((a) => a != action.item).length > 0) {
         _data.filter((a) => a != action.item).pop().children = _data
           .filter((a) => a != action.item)
@@ -83,9 +83,23 @@ const subCategoryReducer = (state, action) => {
           .children.filter((a) => a != action.item);
       }
       return _data;
-
+    case "itemUpdate":
+      if (_data.filter((a) => a != action.item).length > 0) {
+        _data[_data.length - 1] = action.item;
+        var m = _data
+          .filter((a) => a != action.item)
+          .pop()
+          .children.filter((a) => a.key == action.item.key)[0];
+        m.title = action.item.title;
+        m.commissionRate = action.item.commissionRate;
+        m.termDay = action.item.termDay;
+      }
+      return _data;
+    case "itemInsert":
+      console.log(action.item);
+      return _data;
     default:
-      return state;
+      return _data;
   }
 };
 
@@ -104,8 +118,7 @@ const dataReducer = (state, action) => {
 const CategoryComponent = ({ dataSource }) => {
   const [data, setData] = useReducer(dataReducer, dataSource);
   const [subCategory, setSubCategory] = useReducer(subCategoryReducer, []);
-  const [drawerVisible, setDrawerVisible] = useState(false);
-  const [editCategory, setEditCategory] = useState();
+  const [drawerCategory, setDrawerCategory] = useState();
 
   const onSelect = (item) => {
     if (subCategory.some((a) => a.level == item.level)) {
@@ -126,11 +139,25 @@ const CategoryComponent = ({ dataSource }) => {
     message.success("Kategori silindi.");
   };
 
-  const drawerState = (state, item) => {
-    setDrawerVisible(state);
-    if (state) {
-      console.log(item);
+  const saveCategory = (item) => {
+    if (item.action.action == "edit") {
+      // Kategori Düzenleme
+      setSubCategory({ item, type: "itemUpdate" });
+      message.success("Kategori düzenlendi.");
+    } else if (item.action.action == "new" && item.action.item === undefined) {
+      // Ana Kategori
+      item.key = data.length + 1;
+      setData({ item, type: "add" });
+    } else if (item.action.action == "new" && item.action.item !== undefined) {
+      // Alt Kategori
+      setSubCategory({ item, type: "itemInsert" });
+      console.log("alt kategori eklenecek.");
     }
+    drawerState(false);
+  };
+
+  const drawerState = (state, action, item) => {
+    setDrawerCategory({ state, action: action ?? "", item });
   };
 
   //   const find = (array, id) => {
@@ -182,9 +209,9 @@ const CategoryComponent = ({ dataSource }) => {
       </div>
 
       <CategoryDrawer
-        visible={drawerVisible}
         onClose={() => drawerState(false)}
-        model={editCategory}
+        model={drawerCategory}
+        onFinish={saveCategory}
       />
     </>
   );
