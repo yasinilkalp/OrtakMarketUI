@@ -160,12 +160,6 @@ const CategoryComponent = ({ dataSource }) => {
     setDrawerCategory({ state, action: action ?? "", item });
   };
 
-  //   const find = (array, id) => {
-  //     var result;
-  //     array.some((o) => (result = o.key === id ? o : find(o.children || [], id)));
-  //     return result;
-  //   };
-
   return (
     <>
       <div className="category-breadcrumb d-flex">

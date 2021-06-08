@@ -1,23 +1,23 @@
-import React from "react"; 
+import React from "react";
 import CategoryComponent from "components/util-components/Category";
 var originData = [
   {
     key: 1,
-    title: "KOZMETİK",
+    title: "ANTALYA",
     level: 1,
     commissionRate: 16.5,
     termDay: 60,
     children: [
       {
         key: 2,
-        title: "MAKYAJ",
+        title: "MURATPAŞA",
         level: 2,
         commissionRate: 16.5,
         termDay: 60,
         children: [
           {
             key: 5,
-            title: "GÖZ MAKYAJI",
+            title: "YENİGÜN",
             level: 3,
             commissionRate: 16.5,
             termDay: 60,
@@ -90,7 +90,7 @@ var originData = [
         termDay: 60,
         title: "DENEME",
         children: [],
-      }, 
+      },
     ],
   },
   {
@@ -98,16 +98,15 @@ var originData = [
     level: 1,
     commissionRate: 16.5,
     termDay: 60,
-    title: "DENEME",
+    title: "BURDUR",
     children: [],
   },
-]; 
+];
 
 const Categories = () => {
-   
   return (
     <>
-       <CategoryComponent dataSource={originData} />
+      <CategoryComponent dataSource={originData} />
     </>
   );
 };
